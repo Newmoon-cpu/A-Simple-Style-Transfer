@@ -1,0 +1,60 @@
+# Local editor and environment state
+/docs/
+.obsidian/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+env/
+
+# Python caches and local reports
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage*
+htmlcov/
+*.egg-info/
+*.log
+*.pid
+*.tmp
+*.part
+
+# Reproducible build products; .spec files ARE source configuration
+build/
+dist/
+*.exe
+*.dll
+*.pyd
+*.so
+*.manifest
+*.zip
+*.7z
+*.tar.gz
+
+# Local model weights and Hugging Face caches
+/ctrlora/ckpts/
+/ctrlora/annotator/ckpts/
+hf-cache/
+.cache/
+*.ckpt
+*.safetensors
+*.pth
+*.pt
+*.onnx
+
+# User datasets and generated outputs; curated examples stay versioned
+/ctrlora/data/
+/ctrlora/results/
+/ctrlora/runs/
+/ctrlora/training/
+/ctrlora/samples/
+/ctrlora/tmp/
+lightning_logs/
+image_log/
