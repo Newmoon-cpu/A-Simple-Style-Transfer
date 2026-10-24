@@ -1,0 +1,139 @@
+{
+  "sd_file": "ChineseInkComicStrip_v10.ckpt",
+  "prompt": "Chinese ink painting, traditional media, liujiyou, traditional Chinese landscape painting, misty mountains, lakeside pavilion, arched stone bridge, rice paper, delicate ink wash, subtle pale green and warm ochre accents, fine brushwork, atmospheric perspective, harmonious composition, masterpiece, best quality",
+  "n_prompt": "photo, photograph, photorealistic, 3d, render, oversaturated, text, watermark, signature, frame, worst quality, low quality",
+  "resolution": 448,
+  "steps": 28,
+  "scale": 6.5,
+  "seed": 42,
+  "mode": "ablation",
+  "detect_resolution": 512,
+  "eta": 0,
+  "batch": 1,
+  "build": {
+    "build_id": "source-replay-comparison",
+    "revision": "working-tree"
+  },
+  "environment": {
+    "python": "3.11.8",
+    "torch": "2.12.0+cu130",
+    "device": "NVIDIA GeForce RTX 5070 Laptop GPU"
+  },
+  "resources": [
+    {
+      "name": "ChineseInkComicStrip_v10.ckpt",
+      "size": 3271494289,
+      "mtime": 1791724186.9809546,
+      "sha256": null,
+      "verification": "未核验"
+    },
+    {
+      "name": "ctrlora_sd15_basecn700k.ckpt",
+      "size": 1542583795,
+      "mtime": 1791719744.2818415,
+      "sha256": null,
+      "verification": "未核验"
+    },
+    {
+      "name": "ctrlora_sd15_basecn700k_canny_rank128.ckpt",
+      "size": 147851493,
+      "mtime": 1792586752.0401742,
+      "sha256": null,
+      "verification": "未核验"
+    },
+    {
+      "name": "ctrlora_sd15_basecn700k_palette_rank128_100kimgs_100ksteps.ckpt",
+      "size": 147879021,
+      "mtime": 1791719761.0508912,
+      "sha256": null,
+      "verification": "未核验"
+    }
+  ],
+  "created_at": "2026-10-24T20:54:05.259134+08:00",
+  "schema_version": 1,
+  "input_sha256": "38fc1ee9a06fd56e13ef4b2c0de364a3d11789c84d47742a6db4ef6c9ac8572b",
+  "input_size": [
+    1536,
+    1024
+  ],
+  "timing_note": "总耗时含加载及预处理，不用于纯采样速度排名",
+  "results": [
+    {
+      "task_id": "only_a",
+      "label": "仅 canny (0.65)",
+      "conditions": [
+        "canny"
+      ],
+      "weights": [
+        0.65
+      ],
+      "status": "completed",
+      "elapsed_s": 43.965094500017585,
+      "actual_steps": 29,
+      "error": null,
+      "output": "../verification/output-single.png",
+      "output_size": [
+        640,
+        448
+      ],
+      "condition_files": [
+        "../verification/condition-1.png"
+      ]
+    },
+    {
+      "task_id": "only_b",
+      "label": "仅 palette (0.35)",
+      "conditions": [
+        "palette"
+      ],
+      "weights": [
+        0.35
+      ],
+      "status": "completed",
+      "elapsed_s": 40.32147009999608,
+      "actual_steps": 29,
+      "error": null,
+      "output": "palette-only.png",
+      "output_size": [
+        640,
+        448
+      ],
+      "condition_files": [
+        "../verification/condition-2.png"
+      ]
+    },
+    {
+      "task_id": "both",
+      "label": "canny 0.65 + palette 0.35",
+      "conditions": [
+        "canny",
+        "palette"
+      ],
+      "weights": [
+        0.65,
+        0.35
+      ],
+      "status": "completed",
+      "elapsed_s": 52.60167459998047,
+      "actual_steps": 29,
+      "error": null,
+      "output": "../verification/output-dual.png",
+      "output_size": [
+        640,
+        448
+      ],
+      "condition_files": [
+        "../verification/condition-1.png",
+        "../verification/condition-2.png"
+      ]
+    }
+  ],
+  "input_provenance": {
+    "type": "AI-generated demonstration input",
+    "description": "Photographic-style Chinese mountain, lake, pavilion and bridge scene; not a real photograph.",
+    "created_date": "2026-10-24"
+  },
+  "replay_interval": 5,
+  "input_file": "../input_landscape.jpg",
+  "code_commit": "af8192ecab7fb58d8e90ec9f6c03c6db0c9d7881"
+}
