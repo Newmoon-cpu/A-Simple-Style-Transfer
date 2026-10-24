@@ -17,6 +17,8 @@ config.save_memory = True
 from share import *  # noqa: F401,F403
 
 import glob
+import time
+from generation_records import PreviewOptions, PreviewFrame, build_preview_steps
 
 import numpy as np
 import torch
@@ -37,10 +39,10 @@ def seed_everything(seed):
     torch.cuda.manual_seed_all(seed)
 
 
-def build_model(sd_file, basecn_file, lora_files):
+def build_model(sd_file, basecn_file, lora_files, base_dir=None):
     """lora_files: 1~2 个 LoRA 路径。加载为 fp16。"""
     ctrlora = CtrLoRA(num_loras=len(lora_files))
-    model = create_model(ctrlora.config_file)  # CPU
+    model = create_model(os.path.join(base_dir or os.path.dirname(__file__), ctrlora.config_file))  # CPU
 
     model.load_state_dict(load_state_dict(sd_file, location='cpu'), strict=False)
 
@@ -70,11 +72,38 @@ def build_model(sd_file, basecn_file, lora_files):
 
 
 def sample(ctrlora, cond_images, prompt, n_prompt, num_samples, ddim_steps,
-           scale, eta, seed, weights, progress_callback=None):
+           scale, eta, seed, weights, progress_callback=None, frame_callback=None,
+           preview_options=None, warning_callback=None, started_at=None):
     """cond_images: 1~2 个条件图（HWC uint8）。weights: 等长权重列表。返回 PIL 列表。"""
     model = ctrlora.model
     ddim_sampler = DDIMSampler(model)
     num = len(cond_images)
+    options = preview_options or PreviewOptions()
+    start = started_at if started_at is not None else time.perf_counter()
+    active = bool(options.enabled and frame_callback)
+    actual_steps = ddim_steps
+    selected = None
+    def preview(latent, done, total):
+        nonlocal active, actual_steps, selected
+        actual_steps = total
+        if not active: return
+        if selected is None: selected = set(build_preview_steps(total, options))
+        if done not in selected: return
+        decoded = array = None
+        try:
+            with torch.random.fork_rng(devices=[torch.cuda.current_device()]):
+                decoded = model.decode_first_stage(latent.detach().half())
+                array = (einops.rearrange(decoded, 'b c h w -> b h w c') * 127.5 + 127.5).float().cpu().numpy().clip(0,255).astype(np.uint8)
+                image = Image.fromarray(array[0]).convert('RGB')
+                decoded = array = None
+            image.thumbnail((options.max_side, options.max_side))
+            frame_callback(PreviewFrame(done,total,time.perf_counter()-start,image.copy(),'prediction'))
+        except Exception as error:
+            active = False
+            if warning_callback: warning_callback('过程预览已关闭：' + str(error))
+        finally:
+            decoded = array = None
+
 
     if num == 2:
         a, b = cond_images
@@ -121,6 +150,7 @@ def sample(ctrlora, cond_images, prompt, n_prompt, num_samples, ddim_steps,
             unconditional_conditioning=un_conds if num > 1 else un_conds[0],
             progress_callback=(lambda done, total: progress_callback('sampling', done, total))
             if progress_callback else None,
+            latent_preview_callback=preview,
         )
 
         if progress_callback:
@@ -128,7 +158,12 @@ def sample(ctrlora, cond_images, prompt, n_prompt, num_samples, ddim_steps,
         x_samples = model.decode_first_stage(samples.half())
         x_samples = (einops.rearrange(x_samples, 'b c h w -> b h w c') * 127.5 + 127.5).float().cpu().numpy().clip(0, 255).astype(np.uint8)
 
-    return [Image.fromarray(x_samples[i]) for i in range(num_samples)]
+    results = [Image.fromarray(x_samples[i]) for i in range(num_samples)]
+    if options.enabled and frame_callback:
+        image = results[0].copy()
+        image.thumbnail((options.max_side,options.max_side))
+        frame_callback(PreviewFrame(actual_steps,actual_steps,time.perf_counter()-start,image,'final'))
+    return results
 
 
 class StyleTransferEngine:
@@ -156,10 +191,30 @@ class StyleTransferEngine:
     def style_profile(self, sd_file):
         return build_prompt(sd_file)  # (prompt, negative, cfg)
 
+    def validate_resources(self, sd_file, cond_names):
+        paths = [os.path.join(self.base_dir,'ckpts/sd15',sd_file),
+                 os.path.join(self.base_dir,'ckpts/ctrlora-basecn/ctrlora_sd15_basecn700k.ckpt')]
+        extras = {'depth':['dpt_large_384.pt'], 'normal':['dpt_large_384.pt'],
+            'hed':['ControlNetHED.pth'], 'lineart':['sk_model.pth','sk_model2.pth'],
+            'openpose':['body_pose_model.pth','hand_pose_model.pth','facenet.pth'],
+            'seg':['upernet_global_small.pth']}
+        for condition in cond_names:
+            paths.append(os.path.join(self.base_dir,CONDITIONS[condition]['lora']))
+            paths.extend(os.path.join(self.base_dir,'annotator/ckpts',name) for name in extras.get(condition,[]))
+        missing=[path for path in paths if not os.path.isfile(path)]
+        if missing: raise FileNotFoundError('缺少模型：'+'; '.join(missing))
+        from huggingface_hub import snapshot_download
+        try:
+            snapshot_download('openai/clip-vit-large-patch14',local_files_only=True)
+        except Exception as error:
+            raise FileNotFoundError('缺少本地 CLIP 文本编码器缓存，请先准备缓存后再运行实验') from error
+
     # ---- 核心：生成 ----
     def generate(self, image, sd_file, cond_names, weights, prompt, n_prompt,
                  resolution=448, steps=28, scale=7.0, seed=42, detect_resolution=512,
-                 progress_callback=None, preview_callback=None):
+                 progress_callback=None, preview_callback=None, frame_callback=None,
+                 preview_options=None, warning_callback=None):
+        started_at = time.perf_counter()
         photo = HWC3(np.array(image.convert('RGB')))
         if progress_callback:
             progress_callback('conditions', 0, len(cond_names))
@@ -171,14 +226,16 @@ class StyleTransferEngine:
         previews = [Image.fromarray(ci) for ci in cond_images]
         if preview_callback:
             preview_callback(previews)
-        lora_files = [CONDITIONS[c]['lora'] for c in cond_names]
+        lora_files = [os.path.join(self.base_dir, CONDITIONS[c]['lora']) for c in cond_names]
         if progress_callback:
             progress_callback('model', 0, 0)
         ctrlora = self._get_model(sd_file, lora_files)
         if progress_callback:
             progress_callback('sampling', 0, steps)
         results = sample(ctrlora, cond_images, prompt, n_prompt, 1, steps, scale,
-                         0.0, seed, weights, progress_callback=progress_callback)
+                         0.0, seed, weights, progress_callback=progress_callback,
+                         frame_callback=frame_callback, preview_options=preview_options,
+                         warning_callback=warning_callback, started_at=started_at)
         if progress_callback:
             progress_callback('done', 1, 1)
         return results[0], previews
@@ -194,7 +251,7 @@ class StyleTransferEngine:
         ctrlora = build_model(
             os.path.join(self.base_dir, 'ckpts/sd15', sd_file),
             os.path.join(self.base_dir, 'ckpts/ctrlora-basecn/ctrlora_sd15_basecn700k.ckpt'),
-            lora_files,
+            lora_files, base_dir=self.base_dir,
         )
         self._ctrlora = ctrlora
         self._key = key

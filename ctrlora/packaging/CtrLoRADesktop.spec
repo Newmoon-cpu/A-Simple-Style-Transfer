@@ -26,6 +26,16 @@ def _torch_first_call(self, function, *args, **kwargs):
 
 isolated.Python.call = _torch_first_call
 
+import json
+import subprocess
+import datetime
+try:
+    revision = subprocess.check_output(['git','rev-parse','HEAD'],cwd=PROJECT_DIR,text=True).strip()
+except Exception:
+    revision = 'unknown'
+_build_info = PROJECT_DIR / 'packaging/build-info.json'
+if not _build_info.exists():
+    _build_info.write_text(json.dumps({'revision':revision,'build_id':'replay-comparison-'+datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}),encoding='utf-8')
 hiddenimports = []
 for pkg in ['cldm', 'ldm', 'annotator']:
     hiddenimports += collect_submodules(pkg)
@@ -37,12 +47,12 @@ a = Analysis(
     [str(PROJECT_DIR / 'app/qt_app.py')],
     pathex=[str(PROJECT_DIR)],
     binaries=binaries,
-    datas=collect_data_files('open_clip'),
+    datas=collect_data_files('open_clip') + [(str(_build_info),'.')],
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[str(PROJECT_DIR / 'packaging/runtime_torch_first.py')],
-    excludes=['tensorflow', 'detectron2', 'matplotlib', 'tkinter', 'PyQt6', 'PySide6'],
+    excludes=['tensorflow', 'detectron2', 'matplotlib', 'tkinter', 'PyQt6', 'PySide6', '__main__'],
     noarchive=False,
 )
 
@@ -58,7 +68,19 @@ for _name in list(_known_modules):
             a.pure.append((_parent, '-', 'PYMODULE'))
             _known_modules.add(_parent)
 
-pyz = PYZ(a.pure)
+# Recompile application modules from disk even if dependency analysis is cached.
+# Dependency scanning is slow; application bytecode must match the reviewed sources.
+from PyInstaller.config import CONF
+_app_modules = ['core','generation_records','experiments','export_artifacts',
+    'app.qt_app','app.image_widgets','app.replay_widgets','app.experiment_widgets',
+    'app.experiment_worker','app.export_worker','app.verify_desktop','cldm.ddim_hacked']
+_cache = CONF['code_cache'].get(id(a.pure))
+for _module in _app_modules:
+    if _cache is not None:
+        _cache.pop(_module, None)
+    if _module not in {entry[0] for entry in a.pure}:
+        a.pure.append((_module, str(PROJECT_DIR / (_module.replace('.', '/') + '.py')), 'PYMODULE'))
+pyz = PYZ(a.pure, name=str(Path(CONF['workpath']) / 'PYZ-reviewed.pyz'))
 
 exe = EXE(
     pyz,

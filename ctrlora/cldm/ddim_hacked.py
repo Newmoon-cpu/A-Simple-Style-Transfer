@@ -76,6 +76,7 @@ class DDIMSampler(object):
                dynamic_threshold=None,
                ucg_schedule=None,
                progress_callback=None,
+               latent_preview_callback=None,
                **kwargs
                ):
         # if conditioning is not None:
@@ -118,6 +119,7 @@ class DDIMSampler(object):
                                                     dynamic_threshold=dynamic_threshold,
                                                     ucg_schedule=ucg_schedule,
                                                     progress_callback=progress_callback,
+                                                    latent_preview_callback=latent_preview_callback,
                                                     )
         return samples, intermediates
 
@@ -128,7 +130,7 @@ class DDIMSampler(object):
                       mask=None, x0=None, img_callback=None, log_every_t=100,
                       temperature=1., noise_dropout=0., score_corrector=None, corrector_kwargs=None,
                       unconditional_guidance_scale=1., unconditional_conditioning=None, dynamic_threshold=None,
-                      ucg_schedule=None, progress_callback=None):
+                      ucg_schedule=None, progress_callback=None, latent_preview_callback=None):
         device = self.model.betas.device
         b = shape[0]
         if x_T is None:
@@ -170,6 +172,7 @@ class DDIMSampler(object):
                                       unconditional_conditioning=unconditional_conditioning,
                                       dynamic_threshold=dynamic_threshold)
             img, pred_x0 = outs
+            if latent_preview_callback: latent_preview_callback(pred_x0, i + 1, total_steps)
             if callback: callback(i)
             if progress_callback: progress_callback(i + 1, total_steps)
             if img_callback: img_callback(pred_x0, i)

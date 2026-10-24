@@ -24,13 +24,21 @@ from core import StyleTransferEngine
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QPushButton, QComboBox,
     QSpinBox, QDoubleSpinBox, QLineEdit, QFileDialog, QHBoxLayout, QVBoxLayout,
-    QGridLayout, QGroupBox, QSplitter, QMessageBox,
+    QGridLayout, QGroupBox, QSplitter, QMessageBox, QTabWidget,
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from app.image_widgets import ImagePanel, GenerationProgress
+from app.replay_widgets import ReplayPanel
+from app.experiment_widgets import ExperimentPanel
+from app.experiment_worker import ExperimentWorker
+from app.export_worker import ExportWorker
+from experiments import build_experiment_tasks
+from export_artifacts import export_replay_gif, export_experiment_bundle
 
 
 class GenerateWorker(QThread):
+    frame_ready = pyqtSignal(object)
+    warning = pyqtSignal(str)
     done = pyqtSignal(object, object)   # (result PIL, previews [PIL,...])
     error = pyqtSignal(str)
     progress = pyqtSignal(str, int, int)
@@ -45,7 +53,8 @@ class GenerateWorker(QThread):
         try:
             result, previews = self.engine.generate(
                 **self.params, progress_callback=self.progress.emit,
-                preview_callback=self.previews_ready.emit)
+                preview_callback=self.previews_ready.emit, frame_callback=self.frame_ready.emit,
+                warning_callback=self.warning.emit)
             self.done.emit(result, previews)
         except Exception as e:
             import traceback
@@ -58,6 +67,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.engine = StyleTransferEngine()
         self.worker = None
+        self.export_worker = None
         self._input_img = None
 
         self.setWindowTitle('CtrLoRA 条件注入风格重绘（桌面版）')
@@ -66,6 +76,11 @@ class MainWindow(QMainWindow):
 
         self._build_ui()
         self._populate()
+        import json
+        from pathlib import Path
+        info_path=Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parents[1]))/'build-info.json'
+        self.build_info=json.loads(info_path.read_text(encoding='utf-8')) if info_path.exists() else {'build_id':'source-replay-comparison','revision':'working-tree'}
+        self.statusBar().showMessage(self.build_info['build_id'])
 
     def _build_ui(self):
         central = QWidget()
@@ -140,11 +155,21 @@ class MainWindow(QMainWindow):
         right = QWidget()
         rv = QVBoxLayout(right)
 
-        g_out = QGroupBox('风格化结果')
+        g_out = QGroupBox('结果与实验')
         go = QVBoxLayout(g_out)
         self.out_label = ImagePanel('风格化结果', 'styled.png', '绘制完成后，结果将显示在这里')
-        self.out_label.setMinimumSize(500, 300)
-        go.addWidget(self.out_label)
+        g_out.setMinimumSize(500, 300)
+        self.tabs = QTabWidget()
+        self.replay = ReplayPanel()
+        self.experiment = ExperimentPanel()
+        self.tabs.addTab(self.out_label,'风格化结果')
+        self.tabs.addTab(self.replay,'过程回放')
+        self.tabs.addTab(self.experiment,'对比实验')
+        self.experiment.start.clicked.connect(self._start_experiment)
+        self.experiment.stop.clicked.connect(self._stop_experiment)
+        self.experiment.export.clicked.connect(self._export_experiment)
+        self.replay.export.clicked.connect(self._export_replay)
+        go.addWidget(self.tabs)
         rv.addWidget(g_out, 3)
 
         g_prev = QGroupBox('条件图预览')
@@ -215,7 +240,7 @@ class MainWindow(QMainWindow):
                 break
 
     def _set_input(self, path):
-        if self.worker is not None and self.worker.isRunning():
+        if self.worker is not None:
             return
         try:
             with Image.open(path) as source:
@@ -231,19 +256,22 @@ class MainWindow(QMainWindow):
         self.prev1.clear_image()
         self.prev2.clear_image()
         self.generation_progress.reset()
+        self.replay.reset()
+        self.experiment.reset()
 
     # ---- 生成 ----
     def _generate(self):
         if self._input_img is None:
             QMessageBox.warning(self, '提示', '请先选择输入照片')
             return
-        if self.worker is not None and self.worker.isRunning():
+        if self.worker is not None:
             return
         cond_names = [self.cond1_box.currentText()]
         if self.cond2_box.currentText() != 'none':
             cond_names.append(self.cond2_box.currentText())
+        if not self._check_dimensions(): return
         params = dict(
-            image=self._input_img,
+            image=self._input_img.copy(),
             sd_file=self.style_box.currentText(),
             cond_names=cond_names,
             weights=[self.weight1.value(), self.weight2.value()][:len(cond_names)],
@@ -254,6 +282,8 @@ class MainWindow(QMainWindow):
             scale=self.scale_spin.value(),
             seed=self.seed_spin.value(),
         )
+        self.replay.reset()
+        params["preview_options"] = self.replay.options()
         self._set_busy(True)
         self.out_label.clear_image()
         self.prev1.clear_image()
@@ -264,10 +294,13 @@ class MainWindow(QMainWindow):
         self.worker.error.connect(self._on_error)
         self.worker.progress.connect(self.generation_progress.update_progress)
         self.worker.previews_ready.connect(self._on_previews)
+        self.worker.frame_ready.connect(self.replay.append_frame)
+        self.worker.warning.connect(self.statusBar().showMessage)
+        self.worker.finished.connect(self._worker_finished)
         self.worker.start()
 
     def _on_done(self, result, previews):
-        self._set_busy(False)
+        self.replay.mark_finished(True)
         self.out_label.set_image(result)
         self._on_previews(previews)
         self.generation_progress.finish()
@@ -284,15 +317,126 @@ class MainWindow(QMainWindow):
         self.btn_gen.setEnabled(not busy)
         self.btn_gen.setText('正在绘制…' if busy else '🎨 生成')
         self.btn_load.setEnabled(not busy)
+        self.replay.record.setEnabled(not busy)
+        self.replay.interval.setEnabled(not busy)
+        self.experiment.start.setEnabled(not busy)
+        self.experiment.mode.setEnabled(not busy)
         for group in self.parameter_groups:
             group.setEnabled(not busy)
 
     def _on_error(self, msg):
-        self._set_busy(False)
+        if isinstance(self.worker,ExperimentWorker):
+            self.experiment.finish('failed')
+        else:
+            self.replay.mark_finished(False)
         self.generation_progress.fail(msg)
         QMessageBox.critical(self, '生成失败', msg)
 
+    def _check_dimensions(self):
+        width,height=self._input_img.size
+        estimated=max(width,height)/min(width,height)*self.res_spin.value()
+        if estimated>1536:
+            QMessageBox.warning(self,'图片比例过长',
+                '当前图片按短边缩放后长边可能超过1536像素。请先裁剪图片或降低分辨率。')
+            return False
+        return True
+
+    def _worker_finished(self):
+        worker = self.sender()
+        if worker is self.worker:
+            self.worker = None
+            self._set_busy(False)
+        worker.deleteLater()
+
+    def _start_experiment(self):
+        if self.worker is not None:
+            return
+        try:
+            if self._input_img is None:
+                raise ValueError('请先选择输入照片')
+            tasks = build_experiment_tasks(self.experiment.mode.currentData(),
+                (self.cond1_box.currentText(),self.cond2_box.currentText()),
+                (self.weight1.value(),self.weight2.value()))
+            self.engine.validate_resources(self.style_box.currentText(),tasks[-1].cond_names)
+        except (ValueError,FileNotFoundError) as error:
+            QMessageBox.warning(self,'无法开始实验',str(error)); return
+        if not self._check_dimensions(): return
+        self.statusBar().showMessage(f'将串行生成 {len(tasks)} 张图片，模型切换和加载可能需要较长时间')
+        params=dict(image=self._input_img.copy(),sd_file=self.style_box.currentText(),
+            prompt=self.prompt_edit.text(),n_prompt=self.neg_edit.text(),resolution=self.res_spin.value(),
+            steps=self.steps_spin.value(),scale=self.scale_spin.value(),seed=self.seed_spin.value())
+        metadata={k:v for k,v in params.items() if k!='image'}
+        metadata.update(mode=self.experiment.mode.currentData(),detect_resolution=512,eta=0,batch=1,
+            build=self.build_info)
+        import torch, platform
+        metadata['environment']=dict(python=platform.python_version(),torch=torch.__version__,
+            device=torch.cuda.get_device_name() if torch.cuda.is_available() else 'CPU')
+        from pathlib import Path
+        from conditions import CONDITIONS
+        paths=[Path(self.engine.base_dir)/'ckpts/sd15'/params['sd_file'],
+            Path(self.engine.base_dir)/'ckpts/ctrlora-basecn/ctrlora_sd15_basecn700k.ckpt']
+        paths += [Path(self.engine.base_dir)/CONDITIONS[c]['lora'] for c in tasks[-1].cond_names]
+        missing=[str(p) for p in paths if not p.exists()]
+        if missing:
+            QMessageBox.warning(self,'缺少模型','\n'.join(missing)); return
+        metadata['resources']=[dict(name=p.name,size=p.stat().st_size,mtime=p.stat().st_mtime,sha256=None,verification='未核验') for p in paths]
+        self.experiment.begin(tasks,self._input_img,metadata)
+        self._set_busy(True)
+        self.worker=ExperimentWorker(self.engine,params,tasks)
+        self.worker.task_started.connect(self._experiment_started)
+        self.worker.progress.connect(self.generation_progress.update_progress)
+        self.worker.previews_ready.connect(self._on_previews)
+        self.worker.result_ready.connect(self.experiment.set_result)
+        self.worker.done.connect(self._experiment_done)
+        self.worker.error.connect(self._on_error)
+        self.worker.finished.connect(self._worker_finished)
+        self.worker.start()
+
+    def _experiment_started(self,index,total,task):
+        self.experiment.set_active(index,total,task)
+        self.prev1.clear_image(); self.prev2.clear_image()
+        self.generation_progress.start()
+
+    def _experiment_done(self,status):
+        self.experiment.finish(status)
+        if status=='completed': self.generation_progress.finish()
+        else: self.generation_progress.fail('已停止或失败，完成项已保留')
+
+    def _stop_experiment(self):
+        if isinstance(self.worker,ExperimentWorker):
+            self.worker.requestInterruption()
+            self.experiment.status.setText('等待当前任务完成后停止后续任务…')
+
+    def _export_replay(self):
+        path,_=QFileDialog.getSaveFileName(self,'导出 GIF','','GIF (*.gif)')
+        if path:
+            if not path.lower().endswith('.gif'): path += '.gif'
+            self._start_export(export_replay_gif,self.replay.snapshot_frames(),path)
+
+    def _export_experiment(self):
+        path=QFileDialog.getExistingDirectory(self,'导出实验到目录')
+        if path: self._start_export(export_experiment_bundle,self.experiment.snapshot(),path)
+
+    def _start_export(self,function,*args):
+        if self.export_worker is not None: return
+        self.export_worker=ExportWorker(function,*args)
+        self.replay.export.setEnabled(False); self.experiment.export.setEnabled(False)
+        self.export_worker.done.connect(self._export_done)
+        self.export_worker.error.connect(self._export_error)
+        self.export_worker.finished.connect(self._export_finished)
+        self.export_worker.start()
+
+    def _export_done(self,path): self.statusBar().showMessage('已导出：'+path)
+    def _export_error(self,message): QMessageBox.warning(self,'导出失败',message)
+    def _export_finished(self):
+        self.sender().deleteLater(); self.export_worker=None
+        self.replay.export.setEnabled(self.replay.complete)
+        self.experiment.export.setEnabled(bool(self.experiment.records))
+
     def closeEvent(self, event):
+        if self.export_worker is not None:
+            QMessageBox.information(self,'正在导出','请等待文件导出完成后再关闭。')
+            event.ignore(); return
         if self.worker is not None and self.worker.isRunning():
             QMessageBox.information(self, '正在绘制', '请等待本次生成结束后再关闭窗口。')
             event.ignore()
@@ -302,8 +446,13 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    from PyQt5.QtGui import QFont
+    app.setFont(QFont("Microsoft YaHei",9))
     win = MainWindow()
     win.show()
+    if len(sys.argv)==4 and sys.argv[1]=='--verify-replay':
+        from app.verify_desktop import schedule_verification
+        schedule_verification(win,sys.argv[2],sys.argv[3])
     sys.exit(app.exec_())
 
 

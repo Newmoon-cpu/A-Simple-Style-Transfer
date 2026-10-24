@@ -58,3 +58,8 @@ hf-cache/
 /ctrlora/tmp/
 lightning_logs/
 image_log/
+
+/ctrlora/dist-candidate/
+/ctrlora/build-replay/
+/ctrlora/dist-backup-*/
+/ctrlora/packaging/build-info.json
