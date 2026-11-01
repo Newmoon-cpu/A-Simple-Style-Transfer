@@ -67,5 +67,5 @@ image_log/
 # Local training evidence and staged online releases
 /training lora/
 /ctrlora/dist-woodcut/
-/ctrlora/dist-online/
+/ctrlora/dist-online*/
 /ctrlora/release-staging/
