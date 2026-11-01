@@ -206,7 +206,7 @@ class ImagePanel(QWidget):
 
 
 class GenerationProgress(QWidget):
-    STAGES = [('conditions', '条件提取'), ('model', '模型加载'),
+    STAGES = [('download', '模型下载与校验'), ('conditions', '条件提取'), ('model', '模型加载'),
               ('sampling', '逐步绘制'), ('decode', '图像解码')]
 
     def __init__(self, parent=None):
@@ -303,6 +303,7 @@ class GenerationProgress(QWidget):
         else:
             self.bar.setRange(0, 0)
             self.detail.setText({
+                'download': f'已下载 {completed / 1048576:.1f} / {total / 1048576:.1f} MiB（首次使用需要联网）',
                 'conditions': f'已提取 {completed} / {total} 个条件',
                 'model': '加载或复用模型，请稍候',
                 'decode': '采样完成，正在还原最终图像',

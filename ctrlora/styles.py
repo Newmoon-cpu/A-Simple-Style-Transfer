@@ -5,6 +5,16 @@
 """
 
 STYLE_PROFILES = {
+    'woodcut_style_r16_step0500.safetensors': {
+        'prompt': 'woodcut_style, black and white woodcut print, {content}',
+        'negative': 'photograph, color, blurry, text, watermark',
+        'cfg': 7.0,
+    },
+    'woodcut_style_step0500_sd15_merged.ckpt': {
+        'prompt': 'woodcut_style, black and white woodcut print, {content}',
+        'negative': 'photograph, color, blurry, text, watermark',
+        'cfg': 7.0,
+    },
     # 水墨（触发词为该模型 trainedWords）
     'ChineseInkComicStrip_v10.ckpt': {
         'prompt': 'Chinese ink painting, traditional media, liujiyou, {content}',

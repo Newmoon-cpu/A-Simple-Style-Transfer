@@ -124,7 +124,7 @@ class DesktopFeaturesTest(unittest.TestCase):
             progress_callback('sampling', 2, 2)
             progress_callback('decode', 0, 0)
             return [output]
-        with patch.object(core, 'extract_condition', return_value=np.zeros((64, 64, 3), dtype=np.uint8)), \
+        with patch.object(core, 'prepare'), patch.object(core, 'extract_condition', return_value=np.zeros((64, 64, 3), dtype=np.uint8)), \
              patch.object(engine, '_get_model', return_value=object()), \
              patch.object(core, 'sample', side_effect=fake_sample):
             result, previews = engine.generate(output, 'style', ['canny'], [1], '', '',

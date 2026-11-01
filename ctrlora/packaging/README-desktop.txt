@@ -18,3 +18,9 @@ Replay and comparison (2026-10-23)
 - Stop means finish the current image and skip remaining tasks.
 - Export saves full-resolution results, comparison.png, parameters JSON and CSV in your chosen folder.
 - Timings include preprocessing/model loading and should not be used as pure inference speed rankings.
+
+Black-and-white woodcut (self-trained, 2026-11-01)
+Select woodcut_style_step0500_sd15_merged.ckpt in the style menu.
+Recommended: Canny, weight 1, CFG 7, 512 resolution; the style prompt is filled automatically.
+This is the validated step-500 LoRA merged with SD1.5; no separate LoRA import is needed.
+Borders, pseudo-text and altered face/hand details may occur. Style superiority over the prompt baseline remains unproven.

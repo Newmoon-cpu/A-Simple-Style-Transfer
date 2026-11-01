@@ -71,7 +71,7 @@ for _name in list(_known_modules):
 # Recompile application modules from disk even if dependency analysis is cached.
 # Dependency scanning is slow; application bytecode must match the reviewed sources.
 from PyInstaller.config import CONF
-_app_modules = ['core','generation_records','experiments','export_artifacts',
+_app_modules = ['ldm.modules.encoders.modules','resource_download','woodcut_adapter','styles','core','generation_records','experiments','export_artifacts',
     'app.qt_app','app.image_widgets','app.replay_widgets','app.experiment_widgets',
     'app.experiment_worker','app.export_worker','app.verify_desktop','cldm.ddim_hacked']
 _cache = CONF['code_cache'].get(id(a.pure))

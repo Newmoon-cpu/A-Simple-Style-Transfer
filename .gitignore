@@ -63,3 +63,9 @@ image_log/
 /ctrlora/build-replay/
 /ctrlora/dist-backup-*/
 /ctrlora/packaging/build-info.json
+
+# Local training evidence and staged online releases
+/training lora/
+/ctrlora/dist-woodcut/
+/ctrlora/dist-online/
+/ctrlora/release-staging/

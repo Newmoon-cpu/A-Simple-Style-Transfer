@@ -1,0 +1,305 @@
+{
+  "schema": 1,
+  "clip_revision": "32bd64288804d66eefd0ccbe215aa642df71cc41",
+  "resources": [
+    {
+      "path": "ckpts/ctrlora-basecn/ctrlora_sd15_basecn700k.ckpt",
+      "url": "https://huggingface.co/xyfJASON/ctrlora/resolve/main/ctrlora-basecn/ctrlora_sd15_basecn700k.ckpt?download=true",
+      "bytes": 1542583795,
+      "sha256": "f670617c9f8d4da87084506cb91cc2a7d40bb8797d000b1b1b0c8ecb4ab6a4aa",
+      "tags": [
+        "common"
+      ]
+    },
+    {
+      "path": "ckpts/ctrlora-loras/base-conditions/ctrlora_sd15_basecn700k_canny_rank128.ckpt",
+      "url": "https://huggingface.co/xyfJASON/ctrlora/resolve/main/ctrlora-loras/base-conditions/ctrlora_sd15_basecn700k_canny_rank128.ckpt?download=true",
+      "bytes": 147851493,
+      "sha256": "d6d6e70743e88e6f6665ac3834735883785237599636e03f5a90c094efa407c8",
+      "tags": [
+        "canny"
+      ]
+    },
+    {
+      "path": "ckpts/ctrlora-loras/base-conditions/ctrlora_sd15_basecn700k_depth_rank128.ckpt",
+      "url": "https://huggingface.co/xyfJASON/ctrlora/resolve/main/ctrlora-loras/base-conditions/ctrlora_sd15_basecn700k_depth_rank128.ckpt?download=true",
+      "bytes": 147851493,
+      "sha256": "217adb1028fe8224e1fdaaac4e9a40718f8b7214df6532a23af9a11384db5aac",
+      "tags": [
+        "depth"
+      ]
+    },
+    {
+      "path": "ckpts/ctrlora-loras/base-conditions/ctrlora_sd15_basecn700k_hed_rank128.ckpt",
+      "url": "https://huggingface.co/xyfJASON/ctrlora/resolve/main/ctrlora-loras/base-conditions/ctrlora_sd15_basecn700k_hed_rank128.ckpt?download=true",
+      "bytes": 147850997,
+      "sha256": "2d4cdb627dbdcd60623a171852372a7436b21b869a0841a54c000ec85ae047d3",
+      "tags": [
+        "hed"
+      ]
+    },
+    {
+      "path": "ckpts/ctrlora-loras/base-conditions/ctrlora_sd15_basecn700k_normal_rank128.ckpt",
+      "url": "https://huggingface.co/xyfJASON/ctrlora/resolve/main/ctrlora-loras/base-conditions/ctrlora_sd15_basecn700k_normal_rank128.ckpt?download=true",
+      "bytes": 147861085,
+      "sha256": "63f26a829c2bbee4d799ce059d58766ef59aca845ad4f9d8da7474a450dca8d7",
+      "tags": [
+        "normal"
+      ]
+    },
+    {
+      "path": "ckpts/ctrlora-loras/base-conditions/ctrlora_sd15_basecn700k_openpose_rank128.ckpt",
+      "url": "https://huggingface.co/xyfJASON/ctrlora/resolve/main/ctrlora-loras/base-conditions/ctrlora_sd15_basecn700k_openpose_rank128.ckpt?download=true",
+      "bytes": 147867981,
+      "sha256": "e17ff02bb4d3e5350f90bb7c95e31e20c51abaa547b0ba738b6651b0323af269",
+      "tags": [
+        "openpose"
+      ]
+    },
+    {
+      "path": "ckpts/ctrlora-loras/base-conditions/ctrlora_sd15_basecn700k_seg_rank128.ckpt",
+      "url": "https://huggingface.co/xyfJASON/ctrlora/resolve/main/ctrlora-loras/base-conditions/ctrlora_sd15_basecn700k_seg_rank128.ckpt?download=true",
+      "bytes": 147850997,
+      "sha256": "031ba25c6af4a020c4aba9a91dee939e3767f210225499f0956d450ffd81be60",
+      "tags": [
+        "seg"
+      ]
+    },
+    {
+      "path": "ckpts/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_deraindrop_rank128_861imgs_100ksteps.ckpt",
+      "url": "https://huggingface.co/xyfJASON/ctrlora/resolve/main/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_deraindrop_rank128_861imgs_100ksteps.ckpt?download=true",
+      "bytes": 147879269,
+      "sha256": "a7ca42a9222352d26af53354937244308d33b6fc86e161787ed4ebb6ae601b50",
+      "tags": [
+        "deraindrop"
+      ]
+    },
+    {
+      "path": "ckpts/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_illusion_rank128_100kimgs_100ksteps.ckpt",
+      "url": "https://huggingface.co/xyfJASON/ctrlora/resolve/main/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_illusion_rank128_100kimgs_100ksteps.ckpt?download=true",
+      "bytes": 147879269,
+      "sha256": "397c12c389748b8d7b2503cc7ae1052122f0720d3f9386825ac09cc0d186768c",
+      "tags": [
+        "illusion"
+      ]
+    },
+    {
+      "path": "ckpts/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_lineart_rank128_1kimgs_1ksteps.ckpt",
+      "url": "https://huggingface.co/xyfJASON/ctrlora/resolve/main/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_lineart_rank128_1kimgs_1ksteps.ckpt?download=true",
+      "bytes": 147878029,
+      "sha256": "9a207fd58cbde669b504f00af0a31102896c6c7561dd902ffcf9416e39f4a635",
+      "tags": [
+        "lineart"
+      ]
+    },
+    {
+      "path": "ckpts/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_llie_rank128_100kimgs_100ksteps.ckpt",
+      "url": "https://huggingface.co/xyfJASON/ctrlora/resolve/main/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_llie_rank128_100kimgs_100ksteps.ckpt?download=true",
+      "bytes": 147878525,
+      "sha256": "3eba04c730726a109e875ff5c6487038a0775c3e5d8e4c7d91da4d2d0915d5b0",
+      "tags": [
+        "llie"
+      ]
+    },
+    {
+      "path": "ckpts/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_palette_rank128_100kimgs_100ksteps.ckpt",
+      "url": "https://huggingface.co/xyfJASON/ctrlora/resolve/main/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_palette_rank128_100kimgs_100ksteps.ckpt?download=true",
+      "bytes": 147879021,
+      "sha256": "053e31c89718c2330cdbb57f3c3ddcf5e91d8a83ff9562f64fedbb92f2a89387",
+      "tags": [
+        "palette"
+      ]
+    },
+    {
+      "path": "ckpts/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_pixel_rank128_100kimgs_100ksteps.ckpt",
+      "url": "https://huggingface.co/xyfJASON/ctrlora/resolve/main/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_pixel_rank128_100kimgs_100ksteps.ckpt?download=true",
+      "bytes": 147878773,
+      "sha256": "d2c40667c77ee6ebb392d4950f249df7c286c9e600ea50bc0a01498a4c7d21b8",
+      "tags": [
+        "pixel"
+      ]
+    },
+    {
+      "path": "ckpts/sd15/v1-5-pruned-emaonly.ckpt",
+      "url": "https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.ckpt?download=true",
+      "bytes": 4265380512,
+      "sha256": "cc6cb27103417325ff94f52b7a5d2dde45a7515b25c255d8e396c90014281516",
+      "tags": [
+        "v1-5-pruned-emaonly.ckpt",
+        "woodcut_style_r16_step0500.safetensors"
+      ]
+    },
+    {
+      "path": "ckpts/sd15/oilPainting_v10.safetensors",
+      "url": "https://civitai.com/api/download/models/23979",
+      "bytes": 5984222797,
+      "sha256": "9da0c2b94d26d769e855c3739d8d69a25beeee94a9f8a2573d30cd852ddca438",
+      "tags": [
+        "oilPainting_v10.safetensors"
+      ]
+    },
+    {
+      "path": "ckpts/sd15/aziibpixelmix_v10.safetensors",
+      "url": "https://civitai.com/api/download/models/220049",
+      "bytes": 2132625894,
+      "sha256": "0a1a9d0661845ce4d58b6ed1c8dd14dff2c67ed756bf0b8007f9030abf343498",
+      "tags": [
+        "aziibpixelmix_v10.safetensors"
+      ]
+    },
+    {
+      "path": "ckpts/sd15/realisticVisionV60B1.safetensors",
+      "url": "https://civitai.com/api/download/models/245598",
+      "bytes": 2132625894,
+      "sha256": "fe7578cb5ee0be63aa15baa894ab5d1751ff9b5b25ef611d5fafb2186d930c30",
+      "tags": [
+        "realisticVisionV60B1.safetensors"
+      ]
+    },
+    {
+      "path": "annotator/ckpts/body_pose_model.pth",
+      "url": "https://huggingface.co/lllyasviel/Annotators/resolve/main/body_pose_model.pth?download=true",
+      "bytes": 209267595,
+      "sha256": "25a948c16078b0f08e236bda51a385d855ef4c153598947c28c0d47ed94bb746",
+      "tags": [
+        "openpose"
+      ]
+    },
+    {
+      "path": "annotator/ckpts/ControlNetHED.pth",
+      "url": "https://huggingface.co/lllyasviel/Annotators/resolve/main/ControlNetHED.pth?download=true",
+      "bytes": 29444406,
+      "sha256": "5ca93762ffd68a29fee1af9d495bf6aab80ae86f08905fb35472a083a4c7a8fa",
+      "tags": [
+        "hed"
+      ]
+    },
+    {
+      "path": "annotator/ckpts/dpt_large_384.pt",
+      "url": "https://storage.googleapis.com/sfr-unicontrol-data-research/annotator/ckpts/dpt_large_384.pt",
+      "bytes": 1376378527,
+      "sha256": "2f21e586477d90cb9624c7eef5df7891edca49a1c4795ee2cb631fd4daa6ca69",
+      "tags": [
+        "depth",
+        "normal"
+      ]
+    },
+    {
+      "path": "annotator/ckpts/facenet.pth",
+      "url": "https://huggingface.co/lllyasviel/Annotators/resolve/main/facenet.pth?download=true",
+      "bytes": 153718792,
+      "sha256": "8beb52e548624ffcc4aed12af7aee7dcbfaeea420c75609fee999fe7add79d43",
+      "tags": [
+        "openpose"
+      ]
+    },
+    {
+      "path": "annotator/ckpts/hand_pose_model.pth",
+      "url": "https://huggingface.co/lllyasviel/Annotators/resolve/main/hand_pose_model.pth?download=true",
+      "bytes": 147341049,
+      "sha256": "b76b00d1750901abd07b9f9d8c98cc3385b8fe834a26d4b4f0aad439e75fc600",
+      "tags": [
+        "openpose"
+      ]
+    },
+    {
+      "path": "annotator/ckpts/sk_model.pth",
+      "url": "https://huggingface.co/lllyasviel/Annotators/resolve/main/sk_model.pth?download=true",
+      "bytes": 17173511,
+      "sha256": "c686ced2a666b4850b4bb6ccf0748031c3eda9f822de73a34b8979970d90f0c6",
+      "tags": [
+        "lineart"
+      ]
+    },
+    {
+      "path": "annotator/ckpts/sk_model2.pth",
+      "url": "https://huggingface.co/lllyasviel/Annotators/resolve/main/sk_model2.pth?download=true",
+      "bytes": 17173511,
+      "sha256": "30a534781061f34e83bb9406b4335da4ff2616c95d22a585c1245aa8363e74e0",
+      "tags": [
+        "lineart"
+      ]
+    },
+    {
+      "path": "annotator/ckpts/upernet_global_small.pth",
+      "url": "https://huggingface.co/lllyasviel/Annotators/resolve/main/upernet_global_small.pth?download=true",
+      "bytes": 206313115,
+      "sha256": "bebfa1264c10381e389d8065056baaadbdadee8ddc6e36770d1ec339dc84d970",
+      "tags": [
+        "seg"
+      ]
+    },
+    {
+      "path": "hf-cache/models--openai--clip-vit-large-patch14/snapshots/32bd64288804d66eefd0ccbe215aa642df71cc41/config.json",
+      "url": "https://huggingface.co/openai/clip-vit-large-patch14/resolve/32bd64288804d66eefd0ccbe215aa642df71cc41/config.json?download=true",
+      "bytes": 4519,
+      "sha256": "8a09b467700c58138c29d53c605b34ebc69beaadd13274a8a2af8ad2c2f4032a",
+      "tags": [
+        "common"
+      ]
+    },
+    {
+      "path": "hf-cache/models--openai--clip-vit-large-patch14/snapshots/32bd64288804d66eefd0ccbe215aa642df71cc41/merges.txt",
+      "url": "https://huggingface.co/openai/clip-vit-large-patch14/resolve/32bd64288804d66eefd0ccbe215aa642df71cc41/merges.txt?download=true",
+      "bytes": 524619,
+      "sha256": "9fd691f7c8039210e0fced15865466c65820d09b63988b0174bfe25de299051a",
+      "tags": [
+        "common"
+      ]
+    },
+    {
+      "path": "hf-cache/models--openai--clip-vit-large-patch14/snapshots/32bd64288804d66eefd0ccbe215aa642df71cc41/model.safetensors",
+      "url": "https://huggingface.co/openai/clip-vit-large-patch14/resolve/32bd64288804d66eefd0ccbe215aa642df71cc41/model.safetensors?download=true",
+      "bytes": 1710540580,
+      "sha256": "a2bf730a0c7debf160f7a6b50b3aaf3703e7e88ac73de7a314903141db026dcb",
+      "tags": [
+        "common"
+      ]
+    },
+    {
+      "path": "hf-cache/models--openai--clip-vit-large-patch14/snapshots/32bd64288804d66eefd0ccbe215aa642df71cc41/special_tokens_map.json",
+      "url": "https://huggingface.co/openai/clip-vit-large-patch14/resolve/32bd64288804d66eefd0ccbe215aa642df71cc41/special_tokens_map.json?download=true",
+      "bytes": 389,
+      "sha256": "f8c0d6c39aee3f8431078ef6646567b0aba7f2246e9c54b8b99d55c22b707cbf",
+      "tags": [
+        "common"
+      ]
+    },
+    {
+      "path": "hf-cache/models--openai--clip-vit-large-patch14/snapshots/32bd64288804d66eefd0ccbe215aa642df71cc41/tokenizer.json",
+      "url": "https://huggingface.co/openai/clip-vit-large-patch14/resolve/32bd64288804d66eefd0ccbe215aa642df71cc41/tokenizer.json?download=true",
+      "bytes": 2224003,
+      "sha256": "a83e0809aa4c3af7208b2df632a7a69668c6d48775b3c3fe4e1b1199d1f8b8f4",
+      "tags": [
+        "common"
+      ]
+    },
+    {
+      "path": "hf-cache/models--openai--clip-vit-large-patch14/snapshots/32bd64288804d66eefd0ccbe215aa642df71cc41/tokenizer_config.json",
+      "url": "https://huggingface.co/openai/clip-vit-large-patch14/resolve/32bd64288804d66eefd0ccbe215aa642df71cc41/tokenizer_config.json?download=true",
+      "bytes": 905,
+      "sha256": "deef455e52fa5e8151e339add0582e4235f066009601360999d3a9cda83b1129",
+      "tags": [
+        "common"
+      ]
+    },
+    {
+      "path": "hf-cache/models--openai--clip-vit-large-patch14/snapshots/32bd64288804d66eefd0ccbe215aa642df71cc41/vocab.json",
+      "url": "https://huggingface.co/openai/clip-vit-large-patch14/resolve/32bd64288804d66eefd0ccbe215aa642df71cc41/vocab.json?download=true",
+      "bytes": 961143,
+      "sha256": "3f0c4f7d2086b61b38487075278ea9ed04edb53a03cbb045b86c27190fa8fb69",
+      "tags": [
+        "common"
+      ]
+    },
+    {
+      "path": "ckpts/sd15/ChineseInkComicStrip_v10.ckpt",
+      "url": "https://civitai.com/api/download/models/165403",
+      "bytes": 3271494289,
+      "sha256": "6bb7dc23094e32b66160dabdb171e22936efd5a544791e03ffc56efcfd701f21",
+      "tags": [
+        "ChineseInkComicStrip_v10.ckpt"
+      ]
+    }
+  ]
+}

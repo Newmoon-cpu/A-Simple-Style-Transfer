@@ -2,7 +2,18 @@
 
 基于 **CtrLoRA / Stable Diffusion 1.5** 的计算机视觉结课项目。将输入图像重绘成水墨、油画、像素或写实风格，通过视觉条件保留轮廓、空间结构或色调，并在桌面端查看生成过程与控制效果。
 
-**当前版本：v0.2.0** · PyQt5 桌面端 · 真实采样回放 · 双条件对比实验 · 本地 GPU 推理
+**当前版本：v0.3.0 首次联网版** · PyQt5 桌面端 · 真实采样回放 · 双条件对比实验 · 本地 GPU 推理
+
+
+## 下载桌面版
+
+在 [Releases](https://github.com/Newmoon-cpu/A-Simple-Style-Transfer/releases) 下载 `CtrLoRADesktop-online-win64.zip`，解压整个文件夹后双击 `CtrLoRADesktop.exe`。无需安装 Python。首次生成时自动下载所选风格底座、控制权重、预处理模型和 CLIP，窗口显示进度；后续复用本地文件。需要 Windows x64、兼容 NVIDIA GPU及驱动，并预留足够磁盘空间。
+
+程序随附自训练黑白木刻 LoRA（约12.2 MiB），在内存中叠加到下载的 SD1.5，不另分发木刻完整融合底座。默认木刻，建议 Canny 权重1、CFG7、512分辨率。文件名为 `woodcut_style_r16_step0500.safetensors`。
+
+其余模型从原来源下载，资源大小、SHA-256及地址固定在 `ctrlora/configs/resources.json`。下载支持续传、重试与完整校验；源站可能要求用户在环境变量中设置 `HF_TOKEN` 或 `CIVITAI_TOKEN`，也可能因地区网络或下架而不可用，不保证所有环境匿名可下载。不会绕过授权、也不关闭TLS校验。可运行包内 `下载全部模型.bat` 预下载全部配置资源；它需要数十GB空间。
+
+GitHub 的 Source code ZIP 只有源码，不包含可直接运行的桌面运行时。请下载名称中含 `online-win64` 的 Release 附件。第三方模型分别遵循其来源许可证，首次使用前请阅读来源条款。
 
 ## 从山水场景到水墨作品
 

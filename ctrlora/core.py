@@ -31,6 +31,8 @@ from annotator.util import HWC3
 from api import CtrLoRA
 from conditions import CONDITIONS, extract_condition
 from styles import build_prompt
+from woodcut_adapter import NAME as WOODCUT_NAME, BASE as WOODCUT_BASE, apply_woodcut
+from resource_download import prepare
 
 
 def seed_everything(seed):
@@ -39,7 +41,7 @@ def seed_everything(seed):
     torch.cuda.manual_seed_all(seed)
 
 
-def build_model(sd_file, basecn_file, lora_files, base_dir=None):
+def build_model(sd_file, basecn_file, lora_files, base_dir=None, style_adapter=None):
     """lora_files: 1~2 个 LoRA 路径。加载为 fp16。"""
     ctrlora = CtrLoRA(num_loras=len(lora_files))
     model = create_model(os.path.join(base_dir or os.path.dirname(__file__), ctrlora.config_file))  # CPU
@@ -57,6 +59,8 @@ def build_model(sd_file, basecn_file, lora_files, base_dir=None):
         model.load_state_dict(lora_sd, strict=False)
         model.control_model.copy_weights_to_switchable()
 
+    if style_adapter:
+        apply_woodcut(model, style_adapter)
     model = model.half()
     # 修复陈旧 self.dtype（ControlNet/UNet 构造时按 use_fp16=False 固化为 fp32）
     for m in model.modules():
@@ -183,7 +187,16 @@ class StyleTransferEngine:
     def list_styles(self):
         files = glob.glob(os.path.join(self.base_dir, 'ckpts/sd15', '*.ckpt')) + \
             glob.glob(os.path.join(self.base_dir, 'ckpts/sd15', '*.safetensors'))
-        return sorted(os.path.basename(p) for p in files)
+        names = {os.path.basename(p) for p in files}
+        manifest = os.path.join(self.base_dir, 'configs/resources.json')
+        if os.path.isfile(manifest):
+            import json
+            with open(manifest, encoding='utf-8') as manifest_file:
+                resources = json.load(manifest_file)['resources']
+            for item in resources:
+                if item['path'].startswith('ckpts/sd15/'): names.add(os.path.basename(item['path']))
+        if os.path.isfile(os.path.join(self.base_dir, 'ckpts/style-loras', WOODCUT_NAME)): names.add(WOODCUT_NAME)
+        return sorted(names)
 
     def list_conditions(self):
         return list(CONDITIONS.keys())
@@ -192,7 +205,7 @@ class StyleTransferEngine:
         return build_prompt(sd_file)  # (prompt, negative, cfg)
 
     def validate_resources(self, sd_file, cond_names):
-        paths = [os.path.join(self.base_dir,'ckpts/sd15',sd_file),
+        paths = [os.path.join(self.base_dir,'ckpts/sd15',WOODCUT_BASE if sd_file == WOODCUT_NAME else sd_file),
                  os.path.join(self.base_dir,'ckpts/ctrlora-basecn/ctrlora_sd15_basecn700k.ckpt')]
         extras = {'depth':['dpt_large_384.pt'], 'normal':['dpt_large_384.pt'],
             'hed':['ControlNetHED.pth'], 'lineart':['sk_model.pth','sk_model2.pth'],
@@ -203,6 +216,8 @@ class StyleTransferEngine:
             paths.extend(os.path.join(self.base_dir,'annotator/ckpts',name) for name in extras.get(condition,[]))
         missing=[path for path in paths if not os.path.isfile(path)]
         if missing: raise FileNotFoundError('缺少模型：'+'; '.join(missing))
+        if sd_file == WOODCUT_NAME and not os.path.isfile(os.path.join(self.base_dir,'ckpts/style-loras',WOODCUT_NAME)):
+            raise FileNotFoundError('缺少随程序提供的木刻 LoRA')
         from huggingface_hub import snapshot_download
         try:
             snapshot_download('openai/clip-vit-large-patch14',local_files_only=True)
@@ -215,6 +230,9 @@ class StyleTransferEngine:
                  progress_callback=None, preview_callback=None, frame_callback=None,
                  preview_options=None, warning_callback=None):
         started_at = time.perf_counter()
+        if os.path.isfile(os.path.join(self.base_dir, 'configs/resources.json')):
+            prepare(self.base_dir, sd_file, cond_names,
+                    progress=lambda name,done,total: progress_callback('download',done,total) if progress_callback else None)
         photo = HWC3(np.array(image.convert('RGB')))
         if progress_callback:
             progress_callback('conditions', 0, len(cond_names))
@@ -249,9 +267,10 @@ class StyleTransferEngine:
             self._ctrlora = None
             torch.cuda.empty_cache()
         ctrlora = build_model(
-            os.path.join(self.base_dir, 'ckpts/sd15', sd_file),
+            os.path.join(self.base_dir, 'ckpts/sd15', WOODCUT_BASE if sd_file == WOODCUT_NAME else sd_file),
             os.path.join(self.base_dir, 'ckpts/ctrlora-basecn/ctrlora_sd15_basecn700k.ckpt'),
             lora_files, base_dir=self.base_dir,
+            style_adapter=os.path.join(self.base_dir, "ckpts/style-loras", WOODCUT_NAME) if sd_file == WOODCUT_NAME else None,
         )
         self._ctrlora = ctrlora
         self._key = key

@@ -208,7 +208,7 @@ class MainWindow(QMainWindow):
         self.cond2_box.setCurrentText('none')
         # 默认选水墨（若存在）
         styles = [self.style_box.itemText(i) for i in range(self.style_box.count())]
-        for pref in ['ChineseInkComicStrip_v10.ckpt', 'realisticVisionV60B1.safetensors']:
+        for pref in ['woodcut_style_r16_step0500.safetensors', 'ChineseInkComicStrip_v10.ckpt', 'realisticVisionV60B1.safetensors']:
             if pref in styles:
                 self.style_box.setCurrentText(pref)
                 break
@@ -445,11 +445,39 @@ class MainWindow(QMainWindow):
 
 
 def main():
+    if '--download-models' in sys.argv:
+        from resource_download import prepare
+        from pathlib import Path
+        root = Path(sys.executable).parent if getattr(sys, 'frozen', False) else Path(__file__).resolve().parents[1]
+        try:
+            prepare(root, all_resources=True)
+            (root/'download-status.txt').write_text('All configured resources verified.', encoding='utf-8')
+        except Exception as error:
+            (root/'download-status.txt').write_text(str(error), encoding='utf-8')
+            raise
+        return
     app = QApplication(sys.argv)
     from PyQt5.QtGui import QFont
     app.setFont(QFont("Microsoft YaHei",9))
     win = MainWindow()
     win.show()
+    if len(sys.argv)==3 and sys.argv[1]=='--verify-online-ui':
+        from PyQt5.QtCore import QTimer
+        from pathlib import Path
+        import json
+        def verify_online_ui():
+            out=Path(sys.argv[2]);out.mkdir(parents=True,exist_ok=True)
+            try:
+                assert win.style_box.currentText() == 'woodcut_style_r16_step0500.safetensors'
+                assert win.prompt_edit.text().startswith('woodcut_style, black and white woodcut print, ')
+                assert win.style_box.count() == 6
+                assert win.cond1_box.count() == 12
+                win.grab().save(str(out/'online-ui.png'))
+                (out/'online-ui.json').write_text(json.dumps({'styles':6,'conditions':12,'default':win.style_box.currentText(),'status':'PASS'}),encoding='utf-8')
+                app.exit(0)
+            except Exception as error:
+                (out/'online-ui-error.txt').write_text(str(error),encoding='utf-8');app.exit(1)
+        QTimer.singleShot(500,verify_online_ui)
     if len(sys.argv)==4 and sys.argv[1]=='--verify-replay':
         from app.verify_desktop import schedule_verification
         schedule_verification(win,sys.argv[2],sys.argv[3])
