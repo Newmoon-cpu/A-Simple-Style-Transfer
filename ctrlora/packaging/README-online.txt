@@ -1,6 +1,6 @@
 CtrLoRA Desktop 首次联网版
 
-解压整个文件夹到可写目录，然后双击 CtrLoRADesktop.exe。
+先双击下载的 CtrLoRADesktop-online-win64.exe 自解压包，解压到可写目录，再双击目录内的 CtrLoRADesktop.exe。无需额外安装解压软件。
 选择风格、条件和输入图片，点击生成。第一次会自动下载所选模型和公共依赖，窗口显示下载进度；后续复用本地文件。
 默认黑白木刻，建议 Canny、权重1、CFG7、512分辨率。木刻 LoRA 随包提供，不再下载木刻完整底座。
 需要 Windows x64、兼容 NVIDIA GPU及驱动。无需安装 Python。首次可能下载数GB，全部风格和条件需要数十GB；请预留至少40GB空间。

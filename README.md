@@ -7,7 +7,7 @@
 
 ## 下载桌面版
 
-在 [Releases](https://github.com/Newmoon-cpu/A-Simple-Style-Transfer/releases) 下载 `CtrLoRADesktop-online-win64.zip`，解压整个文件夹后双击 `CtrLoRADesktop.exe`。无需安装 Python。首次生成时自动下载所选风格底座、控制权重、预处理模型和 CLIP，窗口显示进度；后续复用本地文件。需要 Windows x64、兼容 NVIDIA GPU及驱动，并预留足够磁盘空间。
+在 [Releases](https://github.com/Newmoon-cpu/A-Simple-Style-Transfer/releases) 下载 `CtrLoRADesktop-online-win64.exe`，双击自解压包并选择解压位置，然后双击目录内的 `CtrLoRADesktop.exe`。无需安装 Python。首次生成时自动下载所选风格底座、控制权重、预处理模型和 CLIP，窗口显示进度；后续复用本地文件。需要 Windows x64、兼容 NVIDIA GPU及驱动，并预留足够磁盘空间。
 
 程序随附自训练黑白木刻 LoRA（约12.2 MiB），在内存中叠加到下载的 SD1.5，不另分发木刻完整融合底座。默认木刻，建议 Canny 权重1、CFG7、512分辨率。文件名为 `woodcut_style_r16_step0500.safetensors`。
 
