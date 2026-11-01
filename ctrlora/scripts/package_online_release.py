@@ -2,10 +2,15 @@
 from pathlib import Path
 import argparse,hashlib,json,shutil,zipfile
 ROOT=Path(__file__).resolve().parents[1]
+def copy_changed(source,destination):
+ source=Path(source);destination=Path(destination)
+ if destination.is_file() and source.stat().st_size==destination.stat().st_size and source.stat().st_mtime_ns==destination.stat().st_mtime_ns:return str(destination)
+ return shutil.copy2(source,destination)
+
 def main():
  p=argparse.ArgumentParser();p.add_argument('--built',default='dist-online/CtrLoRADesktop');a=p.parse_args()
  built=ROOT/a.built;stage=ROOT/'release-staging/CtrLoRADesktop';stage.mkdir(parents=True,exist_ok=True)
- shutil.copytree(built,stage,dirs_exist_ok=True)
+ shutil.copytree(built,stage,dirs_exist_ok=True,copy_function=copy_changed)
  shutil.copytree(ROOT/'configs',stage/'configs',dirs_exist_ok=True)
  (stage/'hf-cache').mkdir(exist_ok=True)
  (stage/'ckpts/style-loras').mkdir(parents=True,exist_ok=True)
